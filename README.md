@@ -40,4 +40,4 @@ Open your browser and navigate to `http://localhost:8080`.
 
 ## Api documentation
 
-For more details about API, see the Swagger documentation [here](./openApi.yaml).
+For more details about API, see the Swagger documentation [here](./openApi.yaml) of [here](https://app.swaggerhub.com/apis/romi2000/testProject/1.0.0#/).
