@@ -1,0 +1,243 @@
+---
+openapi: 3.0.0
+info:
+  title: Transaction and Expense API
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/romi2000/testProject/1.0.0
+  description: SwaggerHub API Auto Mocking
+paths:
+  /bank/transactions/new:
+    post:
+      tags:
+      - Transaction
+      summary: Creates a new transaction.
+      operationId: createTransaction
+      requestBody:
+        description: Transaction data to be saved.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionDTO'
+        required: true
+      responses:
+        "200":
+          description: Successfully created and returned the transaction.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionDTO'
+  /bank/accounts/new:
+    post:
+      tags:
+      - Account
+      summary: Creates a new account.
+      operationId: createAccount
+      requestBody:
+        description: Account data to be saved.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountDto'
+        required: true
+      responses:
+        "200":
+          description: Successfully created and returned the account.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountDto'
+  /clients/transactions/exceeded_transactions:
+    get:
+      tags:
+      - Transactions
+      summary: Retrieves a list of transactions with limits that exceeded limits for a given account.
+      operationId: getExceedingTransactions
+      parameters:
+      - name: accountId
+        in: query
+        description: The account identifier for which exceeded transactions are queried.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A list of exceeded transaction details.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExceededTransactionDTO'
+  /clients/limits/new:
+    post:
+      tags:
+      - Limits
+      summary: Sets a new expense limit for an account.
+      operationId: setNewLimit
+      requestBody:
+        description: The expense limit data.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseLimitDTO'
+        required: true
+      responses:
+        "200":
+          description: The newly created expense limit.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseLimitDTO'
+  /clients/limits/all:
+    get:
+      tags:
+      - Limits
+      summary: Retrieves all limits set for a specific account.
+      operationId: getAllLimits
+      parameters:
+      - name: accountId
+        in: query
+        description: The account identifier for which limits are queried.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: An array of all set limits for the specified account.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseLimitDTO'
+  /clients/limits/actual:
+    get:
+      tags:
+      - Limits
+      summary: Retrieves all current (active) limits for a specific account.
+      operationId: getActualLimits
+      parameters:
+      - name: accountId
+        in: query
+        description: The account identifier for which current limits are queried.
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: An array of active limits for the specified account.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseLimitDTO'
+components:
+  schemas:
+    AbstractDto:
+      required:
+      - created
+      - updated
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        created:
+          type: string
+          format: date-time
+          example: 2024-04-23T18:25:43.511Z
+        updated:
+          type: string
+          format: date-time
+          example: 2024-04-23T18:25:43.511Z
+    AccountDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          maxLength: 10
+          minLength: 10
+          type: string
+    TransactionDTO:
+      required:
+      - accountFrom
+      - accountTo
+      - amount
+      - currencyShortname
+      - expenseCategory
+      type: object
+      properties:
+        accountFrom:
+          maxLength: 10
+          minLength: 10
+          type: string
+        accountTo:
+          maxLength: 10
+          minLength: 10
+          type: string
+        currencyShortname:
+          $ref: '#/components/schemas/Currency'
+        amount:
+          minimum: 0
+          type: number
+          format: double
+        expenseCategory:
+          $ref: '#/components/schemas/ExpenseCategory'
+        datetime:
+          type: string
+          format: date-time
+      allOf:
+      - $ref: '#/components/schemas/AbstractDto'
+    ExpenseLimitDTO:
+      required:
+      - accountId
+      - expenseCategory
+      - limitCurrencyShortname
+      type: object
+      properties:
+        limitSum:
+          type: number
+          format: double
+        limitDatetime:
+          type: string
+          format: date-time
+        limitExpiration:
+          type: string
+          format: date-time
+        limitCurrencyShortname:
+          $ref: '#/components/schemas/Currency'
+        expenseCategory:
+          $ref: '#/components/schemas/ExpenseCategory'
+        accountId:
+          maxLength: 10
+          minLength: 10
+          type: string
+      allOf:
+      - $ref: '#/components/schemas/AbstractDto'
+    ExceededTransactionDTO:
+      type: object
+      properties:
+        transaction:
+          $ref: '#/components/schemas/TransactionDTO'
+        limit:
+          $ref: '#/components/schemas/ExpenseLimitDTO'
+    Currency:
+      type: string
+      enum:
+      - USD
+      - RUB
+      - KZT
+    ExpenseCategory:
+      type: string
+      enum:
+      - GOODS
+      - SERVICES
