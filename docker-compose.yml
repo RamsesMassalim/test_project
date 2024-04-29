@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: springboot-app
+    ports:
+      - "8080:8080"
+    depends_on: # заставить это подняться только после того как тупая кассандра захочет принимать запросы
+      - postgres-db
+      - cassandra-db
+    networks:
+      - network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/test_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_CASSANDRA_CONTACT_POINTS: cassandra-db
+      SPRING_CASSANDRA_PORT: 9042
+      SPRING_CASSANDRA_KEYSPACE_NAME: test_keyspace
+      SPRING_CASSANDRA_USERNAME: cassandra
+      SPRING_CASSANDRA_PASSWORD: cassandra
+      SPRING_APPLICATION_NAME: test-project
+
+  postgres-db:
+    image: postgres:14.7-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - network
+    deploy:
+      resources:
+        limits:
+          memory: 2GB
+    ports:
+      - "15432:5432"
+    volumes:
+      - ./infrastructure/db/postgres/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+      - db-data:/var/lib/postgresql/data
+
+  cassandra-db:
+    image: cassandra:4
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    restart: unless-stopped
+    networks:
+      - network
+    environment:
+      - CASSANDRA_CLUSTER_NAME=MyCluster
+      - CASSANDRA_DC=DC1
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+    deploy:
+      resources:
+        limits:
+          memory: 2GB
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+      - ./infrastructure/db/cassandra/init.cql:/docker-entrypoint-initdb.d/init.cql
+      - ./infrastructure/db/cassandra/entrypoint.sh:/entrypoint.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "nodetool statusgossip | grep -q running" ]
+
+    command: "sh /entrypoint.sh"
+
+
+volumes:
+  db-data:
+  cassandra-data:
+
+networks:
+  network:
