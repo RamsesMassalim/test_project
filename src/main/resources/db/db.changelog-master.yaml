@@ -1,0 +1,19 @@
+databaseChangeLog:
+    - preConditions:
+        - or:
+            - and:
+                - dbms:
+                    type: postgresql
+                - runningAs:
+                    username: postgres
+
+            - and:
+                - dbms:
+                    type: h2
+                - runningAs:
+                    username: SA
+
+
+
+    - include:
+        file: classpath:/db/changelog-postgres/init.sql
