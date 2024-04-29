@@ -4,7 +4,7 @@
 
 To install project, follow these steps:
 
-git clone https://github.com/yourusername/test-project.git
+git clone https://github.com/RamsesMassalim/test_project
 cd test-project
 
 ## Configuring the Service
