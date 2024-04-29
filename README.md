@@ -34,7 +34,7 @@ Then run application with docker
 
 docker-compose up --build
 
-## Using <Project_Name>
+## Using project
 
 Open your browser and navigate to `http://localhost:8080`.
 
